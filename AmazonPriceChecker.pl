@@ -18,6 +18,7 @@ BEGIN { use version; our $VERSION = qv('0.1.1_1') }
 use Getopt::Euclid; # Create a command-line parser that implements the documentation below... 
 
 my $file = $ARGV{-f};
+my  $csv;
 
 #get the google login data
 my $amazon_details = YAML::LoadFile($ENV{HOME} . "/.amazon_login")
@@ -25,7 +26,7 @@ my $amazon_details = YAML::LoadFile($ENV{HOME} . "/.amazon_login")
            
 if ( defined($file) ) 
 { 
-	open my $csv, '>', $file or croak "Couldn't open $file: $!";
+	open $csv, '>', $file or croak "Couldn't open $file: $!";
 	#print the header
 	print {$csv} 
     "title, ".
@@ -51,7 +52,7 @@ while ( 1 )
 
 	if ($answer eq "q") 
 	{
-		if ( defined($file) ) { close $csv or croak "Couldn't close $dir because: $!"; }
+		if ( defined($file) ) { close $csv or croak "Couldn't close $csv because: $!"; }
 		exit; 
 	}
 
@@ -132,7 +133,7 @@ Specify file to write the output to [default: AmazonPriceChecker.csv]
 
 =for Euclid:
     file.type:    writable 
-    file.default: 'AmazonPriceChecker.csv]'
+    file.default: 'AmazonPriceChecker.csv'
 
 
 =item --version
