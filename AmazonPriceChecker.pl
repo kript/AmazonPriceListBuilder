@@ -1,6 +1,7 @@
 #!perl-5.10
 
 use strict;
+use Carp;
 use v5.10; #make use of the say command and other nifty perl 10.0 onwards goodness
 use Common::Sense;
 use Net::Amazon;
@@ -16,12 +17,25 @@ BEGIN { use version; our $VERSION = qv('0.1.1_1') }
 
 use Getopt::Euclid; # Create a command-line parser that implements the documentation below... 
 
-my $dir = $ARGV{-f};
+my $file = $ARGV{-f};
 
 #get the google login data
 my $amazon_details = YAML::LoadFile($ENV{HOME} . "/.amazon_login")
     or die "Failed to read $ENV{HOME}/.amazon_login - $!";
            
+if ( defined($file) ) 
+{ 
+	open my $csv, '>', $file or croak "Couldn't open $file: $!";
+	#print the header
+	print {$csv} 
+    "title, ".
+    "author, ".
+    "ListPrice, ".
+    "OurPrice, ".
+   	"UsedPrice, ".
+   	"\n"  or croak "Couldn't write to $csv because: $!";
+
+}
            
 my $ua = Net::Amazon->new(
         token      => $amazon_details->{token},
@@ -35,7 +49,11 @@ while ( 1 )
 {
 	my $answer = prompt 'Enter an ISBN (enter "q" to exit): ';
 
-	if ($answer eq "q") { exit; }
+	if ($answer eq "q") 
+	{
+		if ( defined($file) ) { close $csv or croak "Couldn't close $dir because: $!"; }
+		exit; 
+	}
 
 	# Get a request object
   	my $response = $ua->search(isbn => $answer);
@@ -53,6 +71,18 @@ while ( 1 )
                 $prop->OurPrice().  ", ".
                 $prop->UsedPrice().  ", ".
                 "\n" ;
+                if ( defined($file) )
+                {
+                #and now to the file
+     	           print {$csv} 
+        	        $prop->title(). ", ".
+          			$prop->author(). ", ".
+                	#$prop->Availabilty(). ", ".
+        	        $prop->ListPrice().  ", ".
+            	    $prop->OurPrice().  ", ".
+                	$prop->UsedPrice().  ", ".
+                	"\n"   or croak "Couldn't write to $csv because: $!";
+                }
             }
   	} 
   	else 
