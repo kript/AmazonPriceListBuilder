@@ -2,7 +2,8 @@
 
 use strict;
 use Carp;
-use v5.10; #make use of the say command and other nifty perl 10.0 onwards goodness
+use
+  v5.10; #make use of the say command and other nifty perl 10.0 onwards goodness
 use Common::Sense;
 use Net::Amazon;
 use IO::Prompt::Simple;
@@ -15,85 +16,80 @@ use YAML;
 #set the version number in a way Getopt::Euclid can parse
 BEGIN { use version; our $VERSION = qv('0.1.1_1') }
 
-use Getopt::Euclid; # Create a command-line parser that implements the documentation below... 
+use Getopt::Euclid
+  ;    # Create a command-line parser that implements the documentation below...
 
 my $file = $ARGV{-f};
-my  $csv;
+my $csv;
 
 #get the google login data
-my $amazon_details = YAML::LoadFile($ENV{HOME} . "/.amazon_login")
-    or die "Failed to read $ENV{HOME}/.amazon_login - $!";
-           
-if ( defined($file) ) 
-{ 
-	open $csv, '>', $file or croak "Couldn't open $file: $!";
-	#print the header
-	print {$csv} 
-    "title, ".
-    "author, ".
-    "ListPrice, ".
-    "OurPrice, ".
-   	"UsedPrice, ".
-   	"\n"  or croak "Couldn't write to $csv because: $!";
+my $amazon_details = YAML::LoadFile( $ENV{HOME} . "/.amazon_login" )
+  or die "Failed to read $ENV{HOME}/.amazon_login - $!";
+
+if ( defined($file) ) {
+    open $csv, '>', $file or croak "Couldn't open $file: $!";
+
+    #print the header
+    print {$csv} "title, "
+      . "author,"
+      . "ListPrice,"
+      . "OurPrice,"
+      . "UsedPrice," . "\n"
+      or croak "Couldn't write to $csv because: $!";
 
 }
-           
+
 my $ua = Net::Amazon->new(
-        token      => $amazon_details->{token},
-        secret_key => $amazon_details->{secret_key},
-        associate_tag => $amazon_details->{associate_tag},
-        locale        => 'uk', #you can change this to your preferred locale
+    token         => $amazon_details->{token},
+    secret_key    => $amazon_details->{secret_key},
+    associate_tag => $amazon_details->{associate_tag},
+    locale => 'uk',    #you can change this to your preferred locale
 );
 
 #continue looping this until told to stop
-while ( 1 )
-{
-	my $answer = prompt 'Enter an ISBN (enter "q" to exit): ';
+while (1) {
+    my $answer = prompt 'Enter an ISBN (enter "q" to exit): ';
 
-	if ($answer eq "q") 
-	{
-		if ( defined($file) ) { close $csv or croak "Couldn't close $csv because: $!"; }
-		exit; 
-	}
+    if ( $answer eq "q" ) {
+        if ( defined($file) ) {
+            close $csv or croak "Couldn't close $csv because: $!";
+        }
+        exit;
+    }
 
-	# Get a request object
-  	my $response = $ua->search(isbn => $answer);
+    # Get a request object
+    my $response = $ua->search( isbn => $answer );
 
-  	if($response->is_success()) 
-  	{
-      #print $response->as_string(), "\n";
-            for my $prop ($response->properties) 
-            {
-          		print "\n". 
-                $prop->title(). ", ".
-          		$prop->author(). ", ".
-                #$prop->Availabilty(). ", ".
-                $prop->ListPrice().  ", ".
-                $prop->OurPrice().  ", ".
-                $prop->UsedPrice().  ", ".
-                "\n" ;
-                if ( defined($file) )
-                {
+    if ( $response->is_success() ) {
+
+        #print $response->as_string(), "\n";
+        for my $prop ( $response->properties ) {
+            print "\n" . $prop->title() . ", " . $prop->author() . ", " .
+
+              #$prop->Availabilty(). ", ".
+              $prop->ListPrice() . ", "
+              . $prop->OurPrice() . ", "
+              . $prop->UsedPrice() . ", " . "\n";
+            if ( defined($file) ) {
+
                 #and now to the file
-     	           print {$csv} 
-        	        $prop->title(). ", ".
-          			$prop->author(). ", ".
-                	#$prop->Availabilty(). ", ".
-        	        $prop->ListPrice().  ", ".
-            	    $prop->OurPrice().  ", ".
-                	$prop->UsedPrice().  ", ".
-                	"\n"   or croak "Couldn't write to $csv because: $!";
-                }
-            }
-  	} 
-  	else 
-  	{
-      print "Error: ", $response->message(), "\n";
-  	}
-}#end of while loop
+                print {$csv} $prop->title() . ", " . $prop->author() . ", " .
 
+                  #$prop->Availabilty(). ", ".
+                  $prop->ListPrice() . ", "
+                  . $prop->OurPrice() . ", "
+                  . $prop->UsedPrice() . ", " . "\n"
+                  or croak "Couldn't write to $csv because: $!";
+            }
+        }
+    }
+    else {
+        print "Error: ", $response->message(), "\n";
+    }
+}    #end of while loop
 
 __END__
+
 =head1 NAME
 
 AmazonPriceChecker - script to take an ISBN at the command line, return information, 
