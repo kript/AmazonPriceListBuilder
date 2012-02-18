@@ -30,7 +30,9 @@ if ( defined($file) ) {
     open $csv, '>', $file or croak "Couldn't open $file: $!";
 
     #print the header
-    print {$csv} "title, "
+    print {$csv} 
+    	"isbn, "
+      . "title, "
       . "author,"
       . "ListPrice,"
       . "OurPrice,"
@@ -61,10 +63,13 @@ while (1) {
     my $response = $ua->search( isbn => $answer );
 
     if ( $response->is_success() ) {
+    
+    	chomp($answer); #ensure the ISBN doesn't have a newline
 
         #print $response->as_string(), "\n";
         for my $prop ( $response->properties ) {
-            print "\n" . $prop->title() . ", " . $prop->author() . ", " .
+            print "\n" . $answer . ", " .
+            $prop->title() . ", " . $prop->author() . ", " .
 
               #$prop->Availabilty(). ", ".
               $prop->ListPrice() . ", "
@@ -95,7 +100,7 @@ __END__
 AmazonPriceChecker - script to take an ISBN at the command line, return information, 
 	optionally to a CSV file.
 
-Return's Title, Author, List Price, Amazon's Price and the Used Price, e.g.;
+Return's ISBN, Title, Author, List Price, Amazon's Price and the Used Price, e.g.;
 Deadline (Newsflesh Trilogy), Mira Grant, £7.99, £4.69, £3.83,
 
 The script will continue looping round asking for an ISBN untill you enter 'q' to quit.
