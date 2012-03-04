@@ -36,7 +36,9 @@ if ( defined($file) ) {
       . "author,"
       . "ListPrice,"
       . "OurPrice,"
-      . "UsedPrice," . "\n"
+      . "UsedPrice," 
+      . "Media,"
+      . "\n"
       or croak "Couldn't write to $csv because: $!";
 
 }
