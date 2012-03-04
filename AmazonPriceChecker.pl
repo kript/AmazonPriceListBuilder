@@ -69,21 +69,21 @@ while (1) {
         #print $response->as_string(), "\n";
         for my $prop ( $response->properties ) {
             print "\n" . $answer . ", " .
-            $prop->title() . ", " . $prop->author() . ", " .
-
-              #$prop->Availabilty(). ", ".
-              $prop->ListPrice() . ", "
-              . $prop->OurPrice() . ", "
-              . $prop->UsedPrice() . ", " . "\n";
+            $prop->title() . ", " . $prop->author() . ", " 
+            . $prop->ListPrice() . ", "
+            . $prop->OurPrice() . ", "
+            . $prop->UsedPrice() . ", " 
+            . $prop->Media() . "\n";
+            
             if ( defined($file) ) {
-
                 #and now to the file
-                print {$csv} $prop->title() . ", " . $prop->author() . ", " .
-
-                  #$prop->Availabilty(). ", ".
-                  $prop->ListPrice() . ", "
-                  . $prop->OurPrice() . ", "
-                  . $prop->UsedPrice() . ", " . "\n"
+                print {$csv} $answer . ", " 
+                . $prop->title() . ", " 
+                . $prop->author() . ", " 
+                . $prop->ListPrice() . ", "
+                . $prop->OurPrice() . ", "
+            	. $prop->UsedPrice() . ", "
+                . $prop->Media() .  "\n"
                   or croak "Couldn't write to $csv because: $!";
             }
         }
